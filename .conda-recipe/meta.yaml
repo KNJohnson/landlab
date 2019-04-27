@@ -1,45 +1,42 @@
+{% set name = "landlab" %}
+{% set data = load_setup_py_data() %}
+
 package:
-  name: landlab
-  version: "1.0.2"
+  name: {{ name }}
+  version: {{ data.get('version') }}
 
 source:
   path: ..
 
 requirements:
   build:
+    - {{ compiler("c") }}
+  host:
     - python
-    - libgcc # [linux and py27 and np == '19']
-    - scipy
-    - numpy x.x
-    - xarray
-    - nose
-    - matplotlib
-    - numpydoc
-    - netcdf4
+    - pip
     - cython
-    - six
-    - pyyaml
-    - setuptools
-    - statsmodels
-    - jpeg <=8 # [osx and np==111]
-
+    - numpy 1.11.*
   run:
     - python
-    - libgcc # [linux and py27 and np == '19']
+    - {{ pin_compatible('numpy') }}
     - scipy
-    - numpy x.x
     - xarray
-    - nose
     - matplotlib
-    - numpydoc
     - netcdf4
-    - cython
     - six
     - pyyaml
-    - setuptools
-    - xarray
     - statsmodels
-    - jpeg <=8 # [osx and np==111]
+    - pyshp
+
+test:
+  requires:
+    - pytest
+  imports:
+    - landlab
+  commands:
+    - export MPLBACKEND=Agg  # [not win]
+    - pytest --pyargs landlab --doctest-modules -o doctest_optionflags="NORMALIZE_WHITESPACE IGNORE_EXCEPTION_DETAIL ALLOW_UNICODE"
 
 build:
-  string: {{ environ.get('BUILD_STR', '') }}
+  number: 0
+  script: "{{ PYTHON }} -m pip install . --no-deps --ignore-installed --no-cache-dir -vvv"
